@@ -2,9 +2,77 @@ chrome.storage.local.get("tablock_password", (data) => {
     const savedPassword = data.tablock_password;
     if (!savedPassword) return;
   
-    const input = prompt("Enter password to unlock WhatsApp Web:");
-    if (input !== savedPassword) {
-      document.body.innerHTML = "<h2 style='text-align:center; margin-top:20%;'>🔒 Tab is Locked</h2>";
-    }
+    // Create an iframe for password input (isolated from main page)
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.top = "0";
+    iframe.style.left = "0";
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    iframe.style.zIndex = "9999";
+    iframe.style.border = "none";
+    iframe.style.backgroundColor = "rgb(0, 0, 0)";
+    iframe.style.display = "block";
+    iframe.style.pointerEvents = "all"; // Block interaction with page underneath
+  
+    // Insert the iframe into the body
+    document.body.appendChild(iframe);
+  
+    // Inside iframe, create password input and UI elements
+    const doc = iframe.contentWindow.document;
+    doc.body.style.margin = 0;
+    doc.body.style.fontFamily = "Arial, sans-serif";
+    doc.body.style.display = "flex";
+    doc.body.style.alignItems = "center";
+    doc.body.style.justifyContent = "center";
+    doc.body.style.height = "100vh";
+    doc.body.style.color = "#fff";
+    doc.body.style.textAlign = "center";
+  
+    doc.body.innerHTML = `
+      <div>
+        <h2>🔒 Enter Password to Unlock</h2>
+        <input type="password" id="unlockPassword" placeholder="Password" style="
+          padding: 10px;
+          font-size: 16px;
+          border-radius: 5px;
+          border: none;
+          margin-top: 10px;
+          outline: none;
+          width: 250px;
+        " />
+        <br/><br/>
+        <button id="unlockBtn" style="
+          padding: 8px 16px;
+          font-size: 16px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          background-color: #4CAF50;
+          color: white;
+        ">Unlock</button>
+      </div>
+    `;
+  
+    doc.getElementById("unlockBtn").addEventListener("click", () => {
+      const input = doc.getElementById("unlockPassword").value;
+      if (input === savedPassword) {
+        iframe.remove(); // Remove iframe after success
+      } else {
+        doc.body.innerHTML = `<h2 style='color: red;'>🔒 Incorrect Password</h2>`;
+      }
+    });
+  
+    // Disable right-click (inspect block)
+    document.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+    });
+  
+    // Disable keyboard shortcuts for inspect tool (F12, Ctrl+Shift+I)
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "F12" || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "C"))) {
+        e.preventDefault();
+      }
+    });
   });
   
