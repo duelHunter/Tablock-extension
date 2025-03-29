@@ -1,19 +1,21 @@
 {
-  "manifest_version": 3,
-  "name": "TabLock",
-  "version": "1.0",
-  "description": "Lock specific tabs with a password",
-  "permissions": ["tabs", "storage", "scripting"],
-  "background": {
-    "service_worker": "background.js"
-  },
-  "action": {
-    "default_popup": "popup.html"
-  },
-  "content_scripts": [
-    {
-      "matches": ["https://web.whatsapp.com/*"],
-      "js": ["content.js"]
-    }
-  ]
-}
+    "manifest_version": 3,
+    "name": "TabLock",
+    "version": "1.1",
+    "description": "Lock WhatsApp Web with a password",
+    "permissions": ["tabs", "storage", "scripting"],
+    "host_permissions": ["https://web.whatsapp.com/*"],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "content_scripts": [
+      {
+        "matches": ["https://web.whatsapp.com/*"],
+        "js": ["content.js"]
+      }
+    ]
+  }
+  
