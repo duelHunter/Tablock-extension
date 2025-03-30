@@ -1,7 +1,12 @@
 chrome.storage.local.get("tablock_password", (data) => {
-    const savedPassword = data.tablock_password;
-    if (!savedPassword) return;
+  const secretKey = "yourSecretKey123";
+    const encryptedPassword = data.tablock_password;
+    if (!encryptedPassword) return;
   
+  // Decrypt the password using AES
+    const decryptedBytes = CryptoJS.AES.decrypt(encryptedPassword, secretKey);
+    const decryptedPassword = decryptedBytes.toString(CryptoJS.enc.Utf8);
+
     // Create an iframe for password input (isolated from main page)
     const iframe = document.createElement("iframe");
     iframe.style.position = "fixed";
@@ -56,7 +61,7 @@ chrome.storage.local.get("tablock_password", (data) => {
   
     doc.getElementById("unlockBtn").addEventListener("click", () => {
       const input = doc.getElementById("unlockPassword").value;
-      if (input === savedPassword) {
+      if (input === decryptedPassword) {
         iframe.remove(); // Remove iframe after success
       } else {
         doc.body.innerHTML = `<h2 style='color: red;'>🔒 Incorrect Password</h2>`;
@@ -74,5 +79,13 @@ chrome.storage.local.get("tablock_password", (data) => {
         e.preventDefault();
       }
     });
+
+    // Disable keyboard shortcuts for inspect tool (F12, Ctrl+Shift+I)
+    iframe.contentWindow.document.addEventListener("keydown", (e) => {
+        if (e.key === "F12" || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "C"))) {
+            e.preventDefault();
+        }
+    });
+
   });
   
