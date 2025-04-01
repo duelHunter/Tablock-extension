@@ -5,6 +5,10 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.runtime.onStartup.addListener(() => {
     lockWhatsAppTabs();
   });
+
+  chrome.tabs.onActivated.addListener(() => {
+    lockWhatsAppTabs();
+  });
   
   function lockWhatsAppTabs() {
     chrome.tabs.query({}, (tabs) => {
