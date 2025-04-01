@@ -1,21 +1,15 @@
-let lockTimeout;
-
 chrome.storage.local.get("tablock_password", (data) => {
   const secretKey = "yourSecretKey123";
-  const encryptedPassword = data.tablock_password;
-  if (!encryptedPassword) return;
-
+    const encryptedPassword = data.tablock_password;
+    if (!encryptedPassword) return;
+  
   // Decrypt the password using AES
-  const decryptedBytes = CryptoJS.AES.decrypt(encryptedPassword, secretKey);
-  const decryptedPassword = decryptedBytes.toString(CryptoJS.enc.Utf8);
+    const decryptedBytes = CryptoJS.AES.decrypt(encryptedPassword, secretKey);
+    const decryptedPassword = decryptedBytes.toString(CryptoJS.enc.Utf8);
 
-  function tabLock() {
-    if (document.getElementById("tablock_iframe")) return;
-
-
+    
     // Create an iframe for password input (isolated from main page)
     const iframe = document.createElement("iframe");
-    iframe.id = "tablock_iframe";
     iframe.style.position = "fixed";
     iframe.style.top = "0";
     iframe.style.left = "0";
@@ -26,10 +20,10 @@ chrome.storage.local.get("tablock_password", (data) => {
     iframe.style.backgroundColor = "rgb(0, 0, 0)";
     iframe.style.display = "block";
     iframe.style.pointerEvents = "all"; // Block interaction with page underneath
-
+  
     // Insert the iframe into the body
     document.body.appendChild(iframe);
-
+  
     // Inside iframe, create password input and UI elements
     const doc = iframe.contentWindow.document;
     doc.body.style.margin = 0;
@@ -40,7 +34,7 @@ chrome.storage.local.get("tablock_password", (data) => {
     doc.body.style.height = "100vh";
     doc.body.style.color = "#fff";
     doc.body.style.textAlign = "center";
-
+  
     doc.body.innerHTML = `
       <div>
         <h2>🔒 Enter Password to Unlock</h2>
@@ -66,49 +60,42 @@ chrome.storage.local.get("tablock_password", (data) => {
       </div>
     `;
 
-    doc.getElementById("unlockBtn").addEventListener("click", () => {
+    const unlockPage = () => {
       const input = doc.getElementById("unlockPassword").value;
       if (input === decryptedPassword) {
         iframe.remove(); // Remove iframe after success
       } else {
         doc.body.innerHTML = `<h2 style='color: red;'>🔒 Incorrect Password</h2>`;
       }
-    });
+    }
+  
+    doc.getElementById("unlockBtn").addEventListener("click", unlockPage);
 
+        // Listen for Enter key inside iframe
+        doc.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+              unlockPage();
+          }
+      });
+  
     // Disable right-click (inspect block)
     document.addEventListener("contextmenu", (e) => {
       e.preventDefault();
     });
-
+  
     // Disable keyboard shortcuts for inspect tool (F12, Ctrl+Shift+I)
     document.addEventListener("keydown", (e) => {
-      if (
-        e.key === "F12" ||
-        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "C"))
-      ) {
+      if (e.key === "F12" || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "C"))) {
         e.preventDefault();
       }
     });
 
     // Disable keyboard shortcuts for inspect tool (F12, Ctrl+Shift+I)
     iframe.contentWindow.document.addEventListener("keydown", (e) => {
-      if (
-        e.key === "F12" ||
-        (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "C"))
-      ) {
-        e.preventDefault();
-      }
+        if (e.key === "F12" || (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "C"))) {
+            e.preventDefault();
+        }
     });
-  }
 
-  // Detect when the user switches tabs
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      // Start 3-minute timer
-      lockTimeout = setTimeout(tabLock, 1 * 60 * 1000);
-    } else {
-      // Cancel lock if the user returns
-      clearTimeout(lockTimeout);
-    }
   });
-});
+  
